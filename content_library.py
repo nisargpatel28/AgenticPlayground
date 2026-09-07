@@ -45,6 +45,26 @@ def build_stats(packs: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
+def validate_packs(packs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return actionable validation issues for selected pack metadata and files."""
+    issues = []
+    for pack in packs:
+        pack_id = str(pack.get("pack_id", "unknown"))
+        image_path = str(pack.get("image_path", ""))
+        manifest_path = str(pack.get("manifest_path", ""))
+        if not image_path:
+            issues.append({"pack_id": pack_id, "issue": "missing image path"})
+        elif not Path(image_path).is_file():
+            issues.append({"pack_id": pack_id, "issue": f"image not found: {image_path}"})
+        if not manifest_path:
+            issues.append({"pack_id": pack_id, "issue": "missing manifest path"})
+        elif not Path(manifest_path).is_file():
+            issues.append({"pack_id": pack_id, "issue": f"manifest not found: {manifest_path}"})
+        if not str(pack.get("prompt", "")).strip():
+            issues.append({"pack_id": pack_id, "issue": "missing prompt"})
+    return issues
+
+
 def write_csv_export(packs: List[Dict[str, Any]], csv_path: str) -> str:
     """Write selected pack metadata as a spreadsheet-friendly CSV file."""
     destination = Path(csv_path)
@@ -66,7 +86,7 @@ def write_html_report(packs: List[Dict[str, Any]], report_path: str) -> str:
     destination.parent.mkdir(parents=True, exist_ok=True)
     cards = []
     for pack in packs:
-        image_path = Path(pack["image_path"])
+        image_path = Path(pack.get("image_path", ""))
         try:
             image_href = os.path.relpath(image_path, destination.parent)
         except ValueError:
@@ -76,14 +96,22 @@ def write_html_report(packs: List[Dict[str, Any]], report_path: str) -> str:
             manifest_href = os.path.relpath(manifest_path, destination.parent)
         except ValueError:
             manifest_href = str(manifest_path)
-        hashtags = " ".join(html.escape(tag) for tag in pack["hashtags"])
+        hashtags = " ".join(html.escape(str(tag)) for tag in pack.get("hashtags", []))
+        alt_text = html.escape(str(pack.get("alt_text", "")))
+        title = html.escape(str(pack.get("pack_id", "Unnamed pack")))
+        description = html.escape(str(pack.get("caption") or pack.get("prompt", "")))
+        manifest_link = (
+            f'<p><a href="{html.escape(manifest_href)}">View manifest</a></p>'
+            if pack.get("manifest_path")
+            else "<p>Manifest unavailable</p>"
+        )
         cards.append(
             "<article>"
-            f'<img src="{html.escape(image_href)}" alt="{html.escape(pack["alt_text"])}">'
-            f'<h2>{html.escape(pack["pack_id"])}</h2>'
-            f'<p>{html.escape(pack["caption"] or pack["prompt"])}</p>'
+            f'<img src="{html.escape(image_href)}" alt="{alt_text}">'
+            f"<h2>{title}</h2>"
+            f"<p>{description}</p>"
             f'<small>{hashtags}</small>'
-            f'<p><a href="{html.escape(manifest_href)}">View manifest</a></p>'
+            f"{manifest_link}"
             "</article>"
         )
     document = """<!doctype html>
@@ -94,60 +122,3 @@ def write_html_report(packs: List[Dict[str, Any]], report_path: str) -> str:
     destination.write_text(document, encoding="utf-8")
     return str(destination)
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Browse, filter, and export generated content packs.")
-    parser.add_argument("--root", default="output", help="Content-pack directory")
-    parser.add_argument("--query", default="", help="Search prompt, caption, alt text, or hashtag")
-    parser.add_argument("--pack-id", action="append", help="Limit results to a pack ID; repeat for multiple IDs")
-    parser.add_argument("--hashtag", action="append", help="Require a hashtag; repeat to require multiple tags")
-    parser.add_argument("--sort", choices=("pack_id", "prompt", "caption"), default="pack_id")
-    parser.add_argument("--limit", type=int, help="Limit the number of displayed packs")
-    parser.add_argument("--export", help="Optional ZIP path for matching packs")
-    parser.add_argument("--csv", dest="csv_path", help="Optional CSV path for matching pack metadata")
-    parser.add_argument("--report", help="Optional HTML gallery path for matching packs")
-    parser.add_argument("--stats", action="store_true", help="Show summary statistics")
-    parser.add_argument("--format", choices=("text", "json"), default="text", help="Output format")
-    args = parser.parse_args()
-    if args.limit is not None and args.limit < 1:
-        parser.error("--limit must be greater than zero")
-
-    result = browse_library(
-        args.root,
-        query=args.query,
-        pack_ids=args.pack_id,
-    )
-    result["packs"] = filter_packs(result["packs"], args.hashtag, args.sort, args.limit)
-    result["total"] = len(result["packs"])
-    if args.stats:
-        result["stats"] = build_stats(result["packs"])
-    if args.csv_path:
-        result["csv_path"] = write_csv_export(result["packs"], args.csv_path)
-    if args.export and result["packs"]:
-        exported = browse_library(
-            args.root,
-            query=args.query,
-            pack_ids=[pack["pack_id"] for pack in result["packs"]],
-            export_path=args.export,
-        )
-        result["export_path"] = exported["export_path"]
-    if args.report:
-        result["report_path"] = write_html_report(result["packs"], args.report)
-
-    if args.format == "json":
-        print(json.dumps(result, indent=2))
-        return
-
-    print(f"Found {result['total']} pack(s).")
-    for pack in result["packs"]:
-        print(f"- {pack['pack_id']}: {pack['prompt']}")
-    if result.get("export_path"):
-        print(f"Exported to: {result['export_path']}")
-    if result.get("csv_path"):
-        print(f"CSV written to: {result['csv_path']}")
-    if result.get("report_path"):
-        print(f"Report written to: {result['report_path']}")
-
-
-if __name__ == "__main__":
-    main()
