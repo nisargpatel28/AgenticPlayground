@@ -122,3 +122,22 @@ def write_html_report(packs: List[Dict[str, Any]], report_path: str) -> str:
     destination.write_text(document, encoding="utf-8")
     return str(destination)
 
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Browse, filter, and export generated content packs.")
+    parser.add_argument("--root", default="output", help="Content-pack directory")
+    parser.add_argument("--query", default="", help="Search prompt, caption, alt text, or hashtag")
+    parser.add_argument("--pack-id", action="append", help="Limit results to a pack ID; repeat for multiple IDs")
+    parser.add_argument("--hashtag", action="append", help="Require a hashtag; repeat to require multiple tags")
+    parser.add_argument("--sort", choices=("pack_id", "prompt", "caption"), default="pack_id")
+    parser.add_argument("--limit", type=int, help="Limit the number of displayed packs")
+    parser.add_argument("--export", help="Optional ZIP path for matching packs")
+    parser.add_argument("--csv", dest="csv_path", help="Optional CSV path for matching pack metadata")
+    parser.add_argument("--report", help="Optional HTML gallery path for matching packs")
+    parser.add_argument("--stats", action="store_true", help="Show summary statistics")
+    parser.add_argument("--validate", action="store_true", help="Check selected pack files and required metadata")
+    parser.add_argument("--format", choices=("text", "json"), default="text", help="Output format")
+    args = parser.parse_args()
+    if args.limit is not None and args.limit < 1:
+        parser.error("--limit must be greater than zero")
