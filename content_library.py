@@ -141,3 +141,9 @@ def main() -> None:
     args = parser.parse_args()
     if args.limit is not None and args.limit < 1:
         parser.error("--limit must be greater than zero")
+
+    result = browse_library(
+        args.root,
+        query=args.query,
+        pack_ids=args.pack_id,
+    )
