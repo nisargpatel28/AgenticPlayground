@@ -31,3 +31,15 @@ def filter_packs(
 
     selected = sorted(selected, key=lambda pack: str(pack.get(sort_by, "")).lower())
     return selected[:limit] if limit is not None else selected
+
+
+def build_stats(packs: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Return compact totals and hashtag counts for the selected packs."""
+    tag_counts = Counter(
+        tag.lower() for pack in packs for tag in pack.get("hashtags", [])
+    )
+    return {
+        "total": len(packs),
+        "with_images": sum(bool(pack.get("image_path")) for pack in packs),
+        "hashtags": dict(tag_counts.most_common()),
+    }
