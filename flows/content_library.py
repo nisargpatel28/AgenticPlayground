@@ -43,3 +43,23 @@ def build_stats(packs: List[Dict[str, Any]]) -> Dict[str, Any]:
         "with_images": sum(bool(pack.get("image_path")) for pack in packs),
         "hashtags": dict(tag_counts.most_common()),
     }
+
+
+def validate_packs(packs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return actionable validation issues for selected pack metadata and files."""
+    issues = []
+    for pack in packs:
+        pack_id = str(pack.get("pack_id", "unknown"))
+        image_path = str(pack.get("image_path", ""))
+        manifest_path = str(pack.get("manifest_path", ""))
+        if not image_path:
+            issues.append({"pack_id": pack_id, "issue": "missing image path"})
+        elif not Path(image_path).is_file():
+            issues.append({"pack_id": pack_id, "issue": f"image not found: {image_path}"})
+        if not manifest_path:
+            issues.append({"pack_id": pack_id, "issue": "missing manifest path"})
+        elif not Path(manifest_path).is_file():
+            issues.append({"pack_id": pack_id, "issue": f"manifest not found: {manifest_path}"})
+        if not str(pack.get("prompt", "")).strip():
+            issues.append({"pack_id": pack_id, "issue": "missing prompt"})
+    return issues
