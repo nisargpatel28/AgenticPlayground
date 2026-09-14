@@ -63,3 +63,18 @@ def validate_packs(packs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not str(pack.get("prompt", "")).strip():
             issues.append({"pack_id": pack_id, "issue": "missing prompt"})
     return issues
+
+
+def write_csv_export(packs: List[Dict[str, Any]], csv_path: str) -> str:
+    """Write selected pack metadata as a spreadsheet-friendly CSV file."""
+    destination = Path(csv_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fields = ["pack_id", "prompt", "caption", "alt_text", "hashtags", "image_path", "manifest_path"]
+    with destination.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for pack in packs:
+            row = {field: pack.get(field, "") for field in fields}
+            row["hashtags"] = " ".join(pack.get("hashtags", []))
+            writer.writerow(row)
+    return str(destination)
