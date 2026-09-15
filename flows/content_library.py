@@ -78,3 +78,46 @@ def write_csv_export(packs: List[Dict[str, Any]], csv_path: str) -> str:
             row["hashtags"] = " ".join(pack.get("hashtags", []))
             writer.writerow(row)
     return str(destination)
+
+
+def write_html_report(packs: List[Dict[str, Any]], report_path: str) -> str:
+    """Write a browsable HTML gallery for the selected packs."""
+    destination = Path(report_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    cards = []
+    for pack in packs:
+        image_path = Path(pack.get("image_path", ""))
+        try:
+            image_href = os.path.relpath(image_path, destination.parent)
+        except ValueError:
+            image_href = str(image_path)
+        manifest_path = Path(pack.get("manifest_path", ""))
+        try:
+            manifest_href = os.path.relpath(manifest_path, destination.parent)
+        except ValueError:
+            manifest_href = str(manifest_path)
+        hashtags = " ".join(html.escape(str(tag)) for tag in pack.get("hashtags", []))
+        alt_text = html.escape(str(pack.get("alt_text", "")))
+        title = html.escape(str(pack.get("pack_id", "Unnamed pack")))
+        description = html.escape(str(pack.get("caption") or pack.get("prompt", "")))
+        manifest_link = (
+            f'<p><a href="{html.escape(manifest_href)}">View manifest</a></p>'
+            if pack.get("manifest_path")
+            else "<p>Manifest unavailable</p>"
+        )
+        cards.append(
+            "<article>"
+            f'<img src="{html.escape(image_href)}" alt="{alt_text}">'
+            f"<h2>{title}</h2>"
+            f"<p>{description}</p>"
+            f'<small>{hashtags}</small>'
+            f"{manifest_link}"
+            "</article>"
+        )
+    document = """<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Content Pack Library</title>
+<style>body{font-family:system-ui;margin:2rem;background:#f5f5f5}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}article{background:white;padding:1rem;border-radius:8px;box-shadow:0 1px 4px #bbb}img{width:100%;aspect-ratio:1;object-fit:cover;background:#eee}h2{font-size:1rem;margin-bottom:.5rem}small{color:#555}</style>
+</head><body><h1>Content Pack Library</h1><main>""" + "".join(cards) + "</main></body></html>"
+    destination.write_text(document, encoding="utf-8")
+    return str(destination)
