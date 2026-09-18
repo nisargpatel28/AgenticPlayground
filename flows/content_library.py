@@ -146,3 +146,42 @@ def main() -> None:
         query=args.query,
         pack_ids=args.pack_id,
     )
+    result["packs"] = filter_packs(result["packs"], args.hashtag, args.sort, args.limit)
+    result["total"] = len(result["packs"])
+    if args.stats:
+        result["stats"] = build_stats(result["packs"])
+    if args.validate:
+        result["validation_issues"] = validate_packs(result["packs"])
+    if args.csv_path:
+        result["csv_path"] = write_csv_export(result["packs"], args.csv_path)
+    if args.export and result["packs"]:
+        exported = browse_library(
+            args.root,
+            query=args.query,
+            pack_ids=[pack["pack_id"] for pack in result["packs"]],
+            export_path=args.export,
+        )
+        result["export_path"] = exported["export_path"]
+    if args.report:
+        result["report_path"] = write_html_report(result["packs"], args.report)
+
+    if args.format == "json":
+        print(json.dumps(result, indent=2))
+        return
+
+    print(f"Found {result['total']} pack(s).")
+    for pack in result["packs"]:
+        print(f"- {pack['pack_id']}: {pack['prompt']}")
+    if result.get("export_path"):
+        print(f"Exported to: {result['export_path']}")
+    if result.get("csv_path"):
+        print(f"CSV written to: {result['csv_path']}")
+    if result.get("report_path"):
+        print(f"Report written to: {result['report_path']}")
+    if args.validate:
+        if result["validation_issues"]:
+            print("Validation issues:")
+            for issue in result["validation_issues"]:
+                print(f"- {issue['pack_id']}: {issue['issue']}")
+        else:
+            print("Validation passed.")
