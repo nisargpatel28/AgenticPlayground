@@ -9,3 +9,7 @@ import openai
 from models.content_pack import ContentPack
 from storage.artifact_store import ArtifactStore
 from flows.agentic_image_flow import make_flow
+
+TextGenerator = Callable[[str], str]
+ImageFlow = Callable[[Dict[str, Any]], Dict[str, Any]]
+
