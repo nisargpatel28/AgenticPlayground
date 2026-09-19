@@ -185,3 +185,7 @@ def main() -> None:
                 print(f"- {issue['pack_id']}: {issue['issue']}")
         else:
             print("Validation passed.")
+
+
+if __name__ == "__main__":
+    main()
