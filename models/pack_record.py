@@ -24,3 +24,14 @@ class PackRecord:
             image_path=str(manifest.get("final_image_path", "")),
             manifest_path=manifest_path,
         )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "pack_id": self.pack_id,
+            "prompt": self.prompt,
+            "caption": self.caption,
+            "alt_text": self.alt_text,
+            "hashtags": self.hashtags,
+            "image_path": self.image_path,
+            "manifest_path": self.manifest_path,
+        }
