@@ -35,6 +35,34 @@ python run_flow.py --prompt "A vintage poster of a robot baker" --outdir output
 
 Outputs will be written into the `output` directory.
 
+## Content Pack Library
+
+Generated packs can be searched and exported as a portable ZIP archive:
+
+```bash
+python content_library.py --root output --query "sunrise" --export output/sunrise-packs.zip --report output/gallery.html
+```
+
+Use `--pack-id` more than once to select specific packs, `--csv output/packs.csv`
+to export spreadsheet-friendly metadata, or add `--format json` for automation
+scripts.
+
+Run `--validate` to check that selected packs have readable image and manifest
+files plus a prompt:
+
+```bash
+python content_library.py --root output --validate --format json
+```
+
+To browse packs visually with Streamlit:
+
+```bash
+streamlit run streamlit_library_ui.py
+```
+
+The library reads each pack's `manifest.json`, searches prompts, captions,
+alt text, and hashtags, and exports the selected manifests and images.
+
 Notes
 - This is a minimal example to demonstrate an agentic flow. Replace the
   OpenAI calls or extend nodes as needed.
