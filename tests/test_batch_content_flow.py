@@ -25,3 +25,4 @@ class BatchContentFlowTests(unittest.TestCase):
                     "alt_text": f"Alt text for {prompt}",
                     "manifest_path": str(pack_dir / "manifest.json"),
                     "pack_id": "pack-1",
+                }
