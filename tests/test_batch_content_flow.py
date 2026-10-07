@@ -26,3 +26,9 @@ class BatchContentFlowTests(unittest.TestCase):
                     "manifest_path": str(pack_dir / "manifest.json"),
                     "pack_id": "pack-1",
                 }
+
+            result = run_batch_content_packs(
+                ["Prompt A", "Prompt B"],
+                output_dir=temp_dir,
+                pack_runner=fake_pack_runner,
+            )
