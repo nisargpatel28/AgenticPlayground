@@ -32,3 +32,8 @@ class BatchContentFlowTests(unittest.TestCase):
                 output_dir=temp_dir,
                 pack_runner=fake_pack_runner,
             )
+
+            self.assertIn("batch_manifest_path", result)
+            batch_manifest = json.loads(Path(result["batch_manifest_path"]).read_text(encoding="utf-8"))
+            self.assertEqual(len(batch_manifest["packs"]), 2)
+            self.assertEqual(batch_manifest["total_packs"], 2)
