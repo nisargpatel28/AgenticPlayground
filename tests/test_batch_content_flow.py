@@ -42,3 +42,8 @@ class BatchContentFlowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_batch_content_packs([])
 
+
+if __name__ == "__main__":
+    unittest.main()
+
+
