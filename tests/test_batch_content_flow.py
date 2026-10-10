@@ -37,3 +37,8 @@ class BatchContentFlowTests(unittest.TestCase):
             batch_manifest = json.loads(Path(result["batch_manifest_path"]).read_text(encoding="utf-8"))
             self.assertEqual(len(batch_manifest["packs"]), 2)
             self.assertEqual(batch_manifest["total_packs"], 2)
+
+    def test_empty_prompt_list_rejected(self):
+        with self.assertRaises(ValueError):
+            run_batch_content_packs([])
+
