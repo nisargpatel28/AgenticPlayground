@@ -10,3 +10,17 @@ from content_library import (
     write_csv_export,
     write_html_report,
 )
+
+
+class ContentLibraryTests(unittest.TestCase):
+    def test_validate_packs_reports_missing_assets_and_prompt(self):
+        issues = validate_packs(
+            [
+                {
+                    "pack_id": "broken",
+                    "image_path": "missing.jpg",
+                    "manifest_path": "missing.json",
+                    "prompt": "",
+                }
+            ]
+        )
