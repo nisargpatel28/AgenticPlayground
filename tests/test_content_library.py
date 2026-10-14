@@ -24,3 +24,8 @@ class ContentLibraryTests(unittest.TestCase):
                 }
             ]
         )
+
+        self.assertEqual(len(issues), 3)
+        self.assertTrue(any("image not found" in issue["issue"] for issue in issues))
+        self.assertTrue(any("manifest not found" in issue["issue"] for issue in issues))
+        self.assertTrue(any(issue["issue"] == "missing prompt" for issue in issues))
