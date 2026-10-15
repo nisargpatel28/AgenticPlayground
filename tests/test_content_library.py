@@ -29,3 +29,29 @@ class ContentLibraryTests(unittest.TestCase):
         self.assertTrue(any("image not found" in issue["issue"] for issue in issues))
         self.assertTrue(any("manifest not found" in issue["issue"] for issue in issues))
         self.assertTrue(any(issue["issue"] == "missing prompt" for issue in issues))
+
+    def test_write_csv_export_preserves_pack_metadata(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "exports" / "packs.csv"
+            write_csv_export(
+                [
+                    {
+                        "pack_id": "pack-1",
+                        "prompt": "A city",
+                        "caption": "A caption, with comma",
+                        "alt_text": "A city image",
+                        "hashtags": ["#city", "#night"],
+                        "image_path": "output/pack-1/final_image.jpg",
+                        "manifest_path": "output/pack-1/manifest.json",
+                    }
+                ],
+                str(csv_path),
+            )
+
+            with csv_path.open(newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+
+            self.assertEqual(rows[0]["pack_id"], "pack-1")
+            self.assertEqual(rows[0]["caption"], "A caption, with comma")
+            self.assertEqual(rows[0]["hashtags"], "#city #night")
+
