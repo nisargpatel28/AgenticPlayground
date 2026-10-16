@@ -55,3 +55,9 @@ class ContentLibraryTests(unittest.TestCase):
             self.assertEqual(rows[0]["caption"], "A caption, with comma")
             self.assertEqual(rows[0]["hashtags"], "#city #night")
 
+    def test_filter_packs_and_build_stats(self):
+        packs = [
+            {"pack_id": "b", "prompt": "Ocean", "caption": "B", "hashtags": ["#Travel"], "image_path": "b.jpg"},
+            {"pack_id": "a", "prompt": "Mountain", "caption": "A", "hashtags": ["#travel", "#nature"], "image_path": "a.jpg"},
+        ]
+
