@@ -61,3 +61,9 @@ class ContentLibraryTests(unittest.TestCase):
             {"pack_id": "a", "prompt": "Mountain", "caption": "A", "hashtags": ["#travel", "#nature"], "image_path": "a.jpg"},
         ]
 
+        selected = filter_packs(packs, hashtags=["nature"], sort_by="prompt", limit=1)
+
+        self.assertEqual([pack["pack_id"] for pack in selected], ["a"])
+        self.assertEqual(build_stats(selected), {"total": 1, "with_images": 1, "hashtags": {"#travel": 1, "#nature": 1}})
+
+
