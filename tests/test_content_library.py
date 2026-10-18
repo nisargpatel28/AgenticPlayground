@@ -66,4 +66,10 @@ class ContentLibraryTests(unittest.TestCase):
         self.assertEqual([pack["pack_id"] for pack in selected], ["a"])
         self.assertEqual(build_stats(selected), {"total": 1, "with_images": 1, "hashtags": {"#travel": 1, "#nature": 1}})
 
+    def test_write_html_report_creates_gallery_with_escaped_metadata(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            image_path = Path(temp_dir) / "final_image.jpg"
+            image_path.write_bytes(b"image")
+            report_path = Path(temp_dir) / "reports" / "index.html"
+
 
