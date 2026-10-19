@@ -72,4 +72,17 @@ class ContentLibraryTests(unittest.TestCase):
             image_path.write_bytes(b"image")
             report_path = Path(temp_dir) / "reports" / "index.html"
 
+            result = write_html_report(
+                [
+                    {
+                        "pack_id": "pack-1",
+                        "prompt": "A test prompt",
+                        "caption": "Caption <safe>",
+                        "alt_text": "Alt text",
+                        "hashtags": ["#test"],
+                        "image_path": str(image_path),
+                    }
+                ],
+                str(report_path),
+            )
 
