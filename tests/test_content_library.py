@@ -86,3 +86,13 @@ class ContentLibraryTests(unittest.TestCase):
                 str(report_path),
             )
 
+            document = report_path.read_text(encoding="utf-8")
+            self.assertEqual(result, str(report_path))
+            self.assertIn("Caption &lt;safe&gt;", document)
+            self.assertNotIn("Caption <safe>", document)
+            self.assertIn("pack-1", document)
+            self.assertIn("Manifest unavailable", document)
+            self.assertTrue(report_path.is_file())
+
+
+
