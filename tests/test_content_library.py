@@ -94,5 +94,5 @@ class ContentLibraryTests(unittest.TestCase):
             self.assertIn("Manifest unavailable", document)
             self.assertTrue(report_path.is_file())
 
-
-
+if __name__ == "__main__":
+    unittest.main()
