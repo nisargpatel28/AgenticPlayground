@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from flows.library_flow import browse_library
+from flows.library_flow import browse_library, delete_packs
 
 
 st.set_page_config(page_title="Content Pack Library", page_icon="📚")
@@ -41,3 +41,18 @@ if st.button("Export selected packs"):
             st.success(f"Exported {exported['total']} pack(s) to {exported['export_path']}")
         except Exception as exc:  # pragma: no cover - UI-level safety
             st.error(f"Export failed: {exc}")
+
+st.divider()
+confirm_delete = st.checkbox("I understand selected pack files will be permanently deleted")
+if st.button("Delete selected packs", disabled=not confirm_delete):
+    if not selected_ids:
+        st.warning("Select at least one pack first.")
+    else:
+        try:
+            result = delete_packs(root_dir, selected_ids)
+            st.success(f"Deleted {len(result['deleted'])} pack(s).")
+            if result["not_found"]:
+                st.info("Some selected packs were already missing: " + ", ".join(result["not_found"]))
+            st.rerun()
+        except Exception as exc:  # pragma: no cover - UI-level safety
+            st.error(f"Deletion failed: {exc}")
