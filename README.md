@@ -62,6 +62,9 @@ streamlit run streamlit_library_ui.py
 
 The library reads each pack's `manifest.json`, searches prompts, captions,
 alt text, and hashtags, and exports the selected manifests and images.
+Selected packs can also be deleted from the Streamlit library after checking
+the explicit confirmation box. Deletion is restricted to pack folders inside
+the configured library directory.
 
 Notes
 - This is a minimal example to demonstrate an agentic flow. Replace the
