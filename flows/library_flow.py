@@ -25,3 +25,11 @@ def browse_library(
     if export_path:
         result["export_path"] = export_packs(records, export_path)
     return result
+
+
+def delete_packs(output_dir: str, pack_ids: Iterable[str]) -> Dict[str, Any]:
+    """Delete explicitly selected packs from the configured library."""
+    selected_ids = list(dict.fromkeys(pack_ids))
+    if not selected_ids:
+        raise ValueError("select at least one pack to delete")
+    return PackCatalog(output_dir).delete_many(selected_ids)
