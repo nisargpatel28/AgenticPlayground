@@ -69,6 +69,12 @@ the configured library directory.
 The Streamlit library also supports favorites. Use **Add favorite** on a pack
 to keep it in a favorites-only view; favorite state is stored in
 `output/.library_preferences.json` and does not modify generated manifests.
+For command-line browsing, add `--favorites-only` to list, export, or report
+only favorited packs:
+
+```bash
+python content_library.py --root output --favorites-only --format json
+```
 
 Notes
 - This is a minimal example to demonstrate an agentic flow. Replace the
