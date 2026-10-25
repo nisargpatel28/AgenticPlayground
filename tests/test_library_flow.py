@@ -4,10 +4,44 @@ import unittest
 from pathlib import Path
 from zipfile import ZipFile
 
-from flows.library_flow import browse_library, delete_packs
+from flows.library_flow import browse_library, delete_packs, set_pack_favorite
+from storage.library_preferences import FavoritesStore
 
 
 class LibraryFlowTests(unittest.TestCase):
+    def test_favorites_can_be_set_filtered_and_removed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pack_dir = Path(temp_dir) / "pack-one"
+            pack_dir.mkdir()
+            image_path = pack_dir / "final_image.jpg"
+            image_path.write_bytes(b"image")
+            (pack_dir / "manifest.json").write_text(
+                json.dumps(
+                    {
+                        "pack_id": "pack-one",
+                        "prompt": "A test image",
+                        "final_image_path": str(image_path),
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            favorite_result = set_pack_favorite(temp_dir, "pack-one", True)
+            favorites = browse_library(temp_dir, favorites_only=True)
+
+            self.assertTrue(favorite_result["is_favorite"])
+            self.assertEqual([pack["pack_id"] for pack in favorites["packs"]], ["pack-one"])
+            self.assertTrue(favorites["packs"][0]["is_favorite"])
+
+            removed_result = set_pack_favorite(temp_dir, "pack-one", False)
+            self.assertFalse(removed_result["is_favorite"])
+            self.assertEqual(browse_library(temp_dir, favorites_only=True)["total"], 0)
+
+    def test_favoriting_unknown_pack_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(LookupError):
+                set_pack_favorite(temp_dir, "missing", True)
+
     def test_delete_selected_pack_removes_its_directory(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             pack_dir = Path(temp_dir) / "pack-one"
@@ -25,10 +59,12 @@ class LibraryFlowTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            FavoritesStore(temp_dir).set_favorite("pack-one", True)
             result = delete_packs(temp_dir, ["pack-one"])
 
             self.assertEqual(result["deleted"], ["pack-one"])
             self.assertFalse(pack_dir.exists())
+            self.assertFalse(FavoritesStore(temp_dir).is_favorite("pack-one"))
 
     def test_delete_rejects_pack_directory_outside_library_root(self):
         with tempfile.TemporaryDirectory() as temp_dir:
