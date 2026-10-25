@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from flows.library_flow import browse_library, delete_packs
+from flows.library_flow import browse_library, delete_packs, set_pack_favorite
 
 
 st.set_page_config(page_title="Content Pack Library", page_icon="📚")
@@ -10,8 +10,9 @@ st.title("Content Pack Library")
 
 root_dir = st.text_input("Library directory", value="output")
 query = st.text_input("Search packs", placeholder="Try a topic, caption, or hashtag")
+favorites_only = st.checkbox("Show favorites only")
 
-result = browse_library(root_dir, query=query)
+result = browse_library(root_dir, query=query, favorites_only=favorites_only)
 st.caption(f"{result['total']} matching pack(s)")
 
 selected_ids = []
@@ -22,6 +23,13 @@ for pack in result["packs"]:
             selected_ids.append(pack["pack_id"])
         st.write(pack["caption"] or pack["alt_text"])
         st.write(" ".join(pack["hashtags"]))
+        favorite_label = "Remove favorite" if pack["is_favorite"] else "Add favorite"
+        if st.button(favorite_label, key=f"favorite_{pack['pack_id']}"):
+            try:
+                set_pack_favorite(root_dir, pack["pack_id"], not pack["is_favorite"])
+                st.rerun()
+            except Exception as exc:  # pragma: no cover - UI-level safety
+                st.error(f"Could not update favorite: {exc}")
         image_path = Path(pack["image_path"])
         if image_path.is_file():
             st.image(str(image_path), width=240)
