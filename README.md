@@ -66,6 +66,10 @@ Selected packs can also be deleted from the Streamlit library after checking
 the explicit confirmation box. Deletion is restricted to pack folders inside
 the configured library directory.
 
+The Streamlit library also supports favorites. Use **Add favorite** on a pack
+to keep it in a favorites-only view; favorite state is stored in
+`output/.library_preferences.json` and does not modify generated manifests.
+
 Notes
 - This is a minimal example to demonstrate an agentic flow. Replace the
   OpenAI calls or extend nodes as needed.
