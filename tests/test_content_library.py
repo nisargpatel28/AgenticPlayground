@@ -1,18 +1,52 @@
+import io
+import json
 import tempfile
 import unittest
 import csv
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from content_library import (
     build_stats,
     filter_packs,
+    main,
     validate_packs,
     write_csv_export,
     write_html_report,
 )
+from flows.library_flow import set_pack_favorite
 
 
 class ContentLibraryTests(unittest.TestCase):
+    def test_cli_favorites_only_lists_favorited_packs(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for pack_id in ("favorite", "regular"):
+                pack_dir = Path(temp_dir) / pack_id
+                pack_dir.mkdir()
+                (pack_dir / "manifest.json").write_text(
+                    json.dumps(
+                        {
+                            "pack_id": pack_id,
+                            "prompt": f"Prompt for {pack_id}",
+                            "final_image_path": "",
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+            set_pack_favorite(temp_dir, "favorite", True)
+
+            output = io.StringIO()
+            with patch(
+                "sys.argv",
+                ["content_library.py", "--root", temp_dir, "--favorites-only", "--format", "json"],
+            ), redirect_stdout(output):
+                main()
+
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["total"], 1)
+            self.assertEqual([pack["pack_id"] for pack in result["packs"]], ["favorite"])
+
     def test_validate_packs_reports_missing_assets_and_prompt(self):
         issues = validate_packs(
             [

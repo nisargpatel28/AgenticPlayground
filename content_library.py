@@ -129,6 +129,7 @@ def main() -> None:
     parser.add_argument("--root", default="output", help="Content-pack directory")
     parser.add_argument("--query", default="", help="Search prompt, caption, alt text, or hashtag")
     parser.add_argument("--pack-id", action="append", help="Limit results to a pack ID; repeat for multiple IDs")
+    parser.add_argument("--favorites-only", action="store_true", help="Show only packs marked as favorites")
     parser.add_argument("--hashtag", action="append", help="Require a hashtag; repeat to require multiple tags")
     parser.add_argument("--sort", choices=("pack_id", "prompt", "caption"), default="pack_id")
     parser.add_argument("--limit", type=int, help="Limit the number of displayed packs")
@@ -146,4 +147,46 @@ def main() -> None:
         args.root,
         query=args.query,
         pack_ids=args.pack_id,
+        favorites_only=args.favorites_only,
     )
+    result["packs"] = filter_packs(result["packs"], args.hashtag, args.sort, args.limit)
+    result["total"] = len(result["packs"])
+    if args.stats:
+        result["stats"] = build_stats(result["packs"])
+    if args.validate:
+        result["validation_issues"] = validate_packs(result["packs"])
+    if args.csv_path:
+        result["csv_path"] = write_csv_export(result["packs"], args.csv_path)
+    if args.export and result["packs"]:
+        exported = browse_library(
+            args.root,
+            query=args.query,
+            pack_ids=[pack["pack_id"] for pack in result["packs"]],
+            favorites_only=args.favorites_only,
+            export_path=args.export,
+        )
+        result["export_path"] = exported["export_path"]
+    if args.report:
+        result["report_path"] = write_html_report(result["packs"], args.report)
+
+    if args.format == "json":
+        print(json.dumps(result, indent=2))
+        return
+
+    print(f"Found {result['total']} pack(s).")
+    for pack in result["packs"]:
+        favorite_marker = " [favorite]" if pack.get("is_favorite") else ""
+        print(f"- {pack['pack_id']}: {pack['prompt']}{favorite_marker}")
+    if result.get("export_path"):
+        print(f"Exported to: {result['export_path']}")
+    if result.get("csv_path"):
+        print(f"CSV written to: {result['csv_path']}")
+    if result.get("report_path"):
+        print(f"Report written to: {result['report_path']}")
+    if args.validate:
+        if result["validation_issues"]:
+            print("Validation issues:")
+            for issue in result["validation_issues"]:
+                print(f"- {issue['pack_id']}: {issue['issue']}")
+        else:
+            print("Validation passed.")
