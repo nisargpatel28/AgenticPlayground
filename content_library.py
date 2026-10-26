@@ -41,6 +41,7 @@ def build_stats(packs: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {
         "total": len(packs),
         "with_images": sum(bool(pack.get("image_path")) for pack in packs),
+        "favorites": sum(bool(pack.get("is_favorite")) for pack in packs),
         "hashtags": dict(tag_counts.most_common()),
     }
 

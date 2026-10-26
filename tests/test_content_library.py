@@ -91,14 +91,14 @@ class ContentLibraryTests(unittest.TestCase):
 
     def test_filter_packs_and_build_stats(self):
         packs = [
-            {"pack_id": "b", "prompt": "Ocean", "caption": "B", "hashtags": ["#Travel"], "image_path": "b.jpg"},
-            {"pack_id": "a", "prompt": "Mountain", "caption": "A", "hashtags": ["#travel", "#nature"], "image_path": "a.jpg"},
+            {"pack_id": "b", "prompt": "Ocean", "caption": "B", "hashtags": ["#Travel"], "image_path": "b.jpg", "is_favorite": False},
+            {"pack_id": "a", "prompt": "Mountain", "caption": "A", "hashtags": ["#travel", "#nature"], "image_path": "a.jpg", "is_favorite": True},
         ]
 
         selected = filter_packs(packs, hashtags=["nature"], sort_by="prompt", limit=1)
 
         self.assertEqual([pack["pack_id"] for pack in selected], ["a"])
-        self.assertEqual(build_stats(selected), {"total": 1, "with_images": 1, "hashtags": {"#travel": 1, "#nature": 1}})
+        self.assertEqual(build_stats(selected), {"total": 1, "with_images": 1, "favorites": 1, "hashtags": {"#travel": 1, "#nature": 1}})
 
     def test_write_html_report_creates_gallery_with_escaped_metadata(self):
         with tempfile.TemporaryDirectory() as temp_dir:
