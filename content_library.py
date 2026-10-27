@@ -175,6 +175,12 @@ def main() -> None:
         return
 
     print(f"Found {result['total']} pack(s).")
+    if args.stats:
+        stats = result["stats"]
+        print(
+            f"Stats: {stats['total']} total, {stats['with_images']} with images, "
+            f"{stats['favorites']} favorites."
+        )
     for pack in result["packs"]:
         favorite_marker = " [favorite]" if pack.get("is_favorite") else ""
         print(f"- {pack['pack_id']}: {pack['prompt']}{favorite_marker}")

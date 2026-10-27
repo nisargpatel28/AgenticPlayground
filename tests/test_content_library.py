@@ -47,6 +47,14 @@ class ContentLibraryTests(unittest.TestCase):
             self.assertEqual(result["total"], 1)
             self.assertEqual([pack["pack_id"] for pack in result["packs"]], ["favorite"])
 
+            output = io.StringIO()
+            with patch(
+                "sys.argv",
+                ["content_library.py", "--root", temp_dir, "--stats"],
+            ), redirect_stdout(output):
+                main()
+            self.assertIn("Stats: 2 total, 0 with images, 1 favorites.", output.getvalue())
+
     def test_validate_packs_reports_missing_assets_and_prompt(self):
         issues = validate_packs(
             [
